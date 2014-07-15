@@ -43,8 +43,8 @@
 	     range_key_condition/1, secondary_index/3,
          q_index/4]).
 
-%%-define(DDB_DOMAIN, "dynamodb.us-east-1.amazonaws.com").
--define(DDB_DOMAIN, "dynamodb.ap-northeast-1.amazonaws.com").
+-define(DDB_DOMAIN, "dynamodb.us-east-1.amazonaws.com").
+%%-define(DDB_DOMAIN, "dynamodb.ap-northeast-1.amazonaws.com").
 -define(DDB_ENDPOINT, "https://" ++ ?DDB_DOMAIN ++ "/").
 -define(DDB_AMZ_PREFIX, "x-amz-").
 
@@ -59,9 +59,9 @@
 -define(TOKEN_HEADER, "x-amz-security-token").
 -define(TARGET_HEADER, "X-Amz-Target").
 -define(CONTENT_TYPE_HEADER, "Content-Type").
--define(CONNECTION_HEADER, "connection").
+-define(CONNECTION_HEADER, "Connection").
 
--define(CONTENT_TYPE, "application/x-amz-json-1.0").
+-define(CONTENT_TYPE, 'application/x-amz-json-1.0').
 
 %%% Endpoint targets
 
@@ -109,7 +109,9 @@ credentials(AccessKeyId, SecretAccessKey, SessionToken) ->
     'ok' = application:set_env('ddb', 'accesskeyid', AccessKeyId),
     'ok' = application:set_env('ddb', 'secretaccesskey', SecretAccessKey),
     'ok' = application:set_env('ddb', 'sessiontoken', SessionToken),
-	ibrowse:set_max_sessions(?DDB_DOMAIN, 443, 500).
+%%     ibrowse:set_max_timeout(infinity),
+%%     ibrowse:set_config_value(inactivity_timeout, 60 * 1000),
+	ibrowse:set_max_sessions(?DDB_DOMAIN, 443, 20).
 
 %%% Retrieve stored credentials.
 
@@ -693,18 +695,18 @@ condition('between') -> <<"BETWEEN">>.
 
 request(Target, JSON) ->
     Body = jsx:term_to_json(JSON),
-    ok = lager:debug("REQUEST BODY ~n~p", [Body]),
     Headers = headers(Target, Body),
     Opts = [{'response_format', 'binary'}],
-	lager:debug("send request... ... ..."),
-    F = fun() -> ibrowse:send_req(?DDB_ENDPOINT, [{'Content-type', ?CONTENT_TYPE}| Headers], 'post', Body, Opts) end,
+	lager:info("send request... ... ...: ~p ~p", [Target, Body]),
+    ibrowse:trace_on(),
+    F = fun() -> ibrowse:send_req(?DDB_ENDPOINT, Headers, 'post', Body, Opts) end,
 	case ddb_aws:retry(F, ?MAX_RETRIES, fun jsx:json_to_term/1) of
 	{'error', 'expired_token'} ->
 	    {ok, Key, Secret, Token} = ddb_iam:token(129600),
 	    ddb:credentials(Key, Secret, Token),
 	    request(Target, JSON);
 	Else ->
-    	lager:debug("receive response... ... : ~p", [Else]),
+    	lager:info("receive response... ... : ~p", [Else]),
 	    Else
     end.
 
@@ -716,7 +718,7 @@ headers(Target, Body) ->
     Headers = [{?DATE_HEADER, Date},
                {?TARGET_HEADER, Target},
                {?TOKEN_HEADER, SessionToken},
-               {?CONNECTION_HEADER, "Keep-Alive"},
+               {?CONNECTION_HEADER, 'Keep-Alive'},
                {?CONTENT_TYPE_HEADER, ?CONTENT_TYPE}],
     Authorization = authorization(AccessKeyId, SecretAccessKey, Headers, Body),
     [{?AUTHORIZATION_HEADER, Authorization}|Headers].

@@ -59,17 +59,17 @@ retry(F, Max, N, H)
 		    JSON = jsx:json_to_term(Body),
 		    case proplists:get_value(<<"__type">>, JSON) of
 			<<"com.amazonaws.dynamodb.v20120810#ProvisionedThroughputExceededException">> ->
-			    ok = lager:warning("Got client error (~s) ~p, retrying...", [Code, Body]),
+			    ok = lager:error("Got client error (~s) ~p, retrying...", [Code, Body]),
 			    retry(F, Max, N + 1, H);
 			<<"com.amazonaws.dynamodb.v20120810#ThrottlingException">> ->
-			    ok = lager:warning("Got client error (~s) ~p, retrying...", [Code, Body]),
+			    ok = lager:error("Got client error (~s) ~p, retrying...", [Code, Body]),
 			    retry(F, Max, N + 1, H);
 			<<"com.amazon.coral.service#ExpiredTokenException">> ->
-			    ok = lager:warning("Got client error (~s) ~p, expired token...", [Code, Body]),
+			    ok = lager:error("Got client error (~s) ~p, expired token...", [Code, Body]),
 			    {'error', 'expired_token'};
 			<<"com.amazonaws.dynamodb.v20120810#ConditionalCheckFailedException">> ->
 			    %% This is expected in some use cases, so just trace at info level
-			    ok = lager:info("Got client error (~s) ~p, aborting...", [Code, Body]),
+			    ok = lager:error("Got client error (~s) ~p, aborting...", [Code, Body]),
 			    {'error', H(Body)};
 			_ ->
 			    ok = lager:error("Got client error (~s) ~p, aborting...", [Code, Body]),
@@ -77,10 +77,10 @@ retry(F, Max, N, H)
 		    end
 	    end;
 	{'ok', Code, _, Body} ->
-	    ok = lager:warning("Unexpected response (~s) ~p, retrying...", [Code, Body]),
+	    ok = lager:error("Unexpected response (~s) ~p, retrying...", [Code, Body]),
 	    retry(F, Max, N + 1, H);
 	{'error', Error} ->
-	    ok = lager:debug("Got ~p retrying...", [Error]),
+	    ok = lager:error("Got ~p retrying...", [Error]),
 	    retry(F, Max, N + 1, H)
     end.
 
