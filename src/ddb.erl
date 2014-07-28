@@ -697,7 +697,7 @@ request(Target, JSON) ->
     Body = jsx:term_to_json(JSON),
     Headers = headers(Target, Body),
     Opts = [{'response_format', 'binary'}],
-	lager:info("send request... ... ...: ~p ~p", [Target, Body]),
+	lager:debug("send request... ... ...: ~p ~p", [Target, Body]),
     ibrowse:trace_on(),
     F = fun() -> ibrowse:send_req(?DDB_ENDPOINT, Headers, 'post', Body, Opts) end,
 	case ddb_aws:retry(F, ?MAX_RETRIES, fun jsx:json_to_term/1) of
@@ -706,7 +706,7 @@ request(Target, JSON) ->
 	    ddb:credentials(Key, Secret, Token),
 	    request(Target, JSON);
 	Else ->
-    	lager:info("receive response... ... : ~p", [Else]),
+    	lager:debug("receive response... ... : ~p", [Else]),
 	    Else
     end.
 
