@@ -304,26 +304,6 @@ key_value(HashKeyName, HashKeyValue, HashKeyType,
     [{<<"Key">>, [{HashKeyName, [{type(HashKeyType), HashKeyValue}]},
                   {RangeKeyName, [{type(RangeKeyType), RangeKeyValue}]}]
     }].
-%%
-%% -spec key_value(binary(), type()) -> json().
-%%
-%% key_value(HashKeyValue, HashKeyType)
-%%   when is_binary(HashKeyValue),
-%%        is_atom(HashKeyType) ->
-%%     [{<<"Key">>, [{<<"HashKeyElement">>,
-%%                    [{type(HashKeyType), HashKeyValue}]}]}].
-
-%% -spec key_value(binary(), type(), binary(), type()) -> json().
-%%
-%% key_value(HashKeyValue, HashKeyType, RangeKeyValue, RangeKeyType)
-%%   when is_binary(HashKeyValue),
-%%        is_atom(HashKeyType),
-%%        is_binary(RangeKeyValue),
-%%        is_atom(RangeKeyType) ->
-%%     [{<<"Key">>, [{<<"HashKeyElement">>,
-%%                    [{type(HashKeyType), HashKeyValue}]},
-%%                   {<<"RangeKeyElement">>,
-%%                    [{type(RangeKeyType), RangeKeyValue}]}]}].
     
 %%% Update attributes of an existing item.
 
