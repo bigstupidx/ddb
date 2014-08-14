@@ -36,7 +36,7 @@
          cond_delete/3, cond_delete/4,
          now/0, find/3, find/4,
 	     q/4, q/5, q/7, q/8,
-         batch_get/2, batch_key_value/3, batch_get_unprocessed/2, 
+         batch_get/3, batch_key_value/3, batch_get_unprocessed/2,
          batch_put/2, batch_put_unprocessed/2, 
          batch_delete/2, batch_delete_unprocessed/2,
 	     scan/2, scan/3, batch_key_value/6,
@@ -448,13 +448,14 @@ get(Name, Keys, Parameters)
 
 %% get items in batch mode
 
--spec batch_get(tablename(), [key_json()]) -> json_reply().
+-spec batch_get(tablename(), [key_json()], json_parameters()) -> json_reply().
 
-batch_get(Name, KeyList) 
+batch_get(Name, KeyList, AttributesToGet)
     when is_binary(Name),
-         is_list(KeyList) ->
+         is_list(KeyList),
+         is_list(AttributesToGet) ->
     JSON = [{<<"RequestItems">>, 
-                [{Name, [{<<"Keys">>, KeyList}]}]}, 
+                [{Name, [{<<"Keys">>, KeyList}] ++ AttributesToGet}]},
             {<<"ReturnConsumedCapacity">>, <<"TOTAL">>}],
     request(?TG_BATCH_GET_ITEM, JSON).
 
