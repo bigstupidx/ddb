@@ -54,7 +54,7 @@ retry(F, Max, N, H)
 	    case jsx:is_json(Body) of
 		false ->
 		    ok = lager:error("Got client error (~s) ~p, aborting...", [Code, Body]),
-		    {'error', H(Body)};
+		    retry(F, Max, N + 1, H);
 		true ->
 		    JSON = jsx:json_to_term(Body),
 		    case proplists:get_value(<<"__type">>, JSON) of

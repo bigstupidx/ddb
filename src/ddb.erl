@@ -111,7 +111,8 @@ credentials(AccessKeyId, SecretAccessKey, SessionToken) ->
     'ok' = application:set_env('ddb', 'sessiontoken', SessionToken),
 %%     ibrowse:set_max_timeout(infinity),
 %%     ibrowse:set_config_value(inactivity_timeout, 60 * 1000),
-	ibrowse:set_max_sessions(?DDB_DOMAIN, 443, 20).
+	ibrowse:set_max_sessions(?DDB_DOMAIN, 443, 1024),
+    ibrowse:set_max_pipeline_size(?DDB_DOMAIN, 443, 10).
 
 %%% Retrieve stored credentials.
 
@@ -677,10 +678,10 @@ condition('between') -> <<"BETWEEN">>.
 request(Target, JSON) ->
     Body = jsx:term_to_json(JSON),
     Headers = headers(Target, Body),
-    Opts = [{'response_format', 'binary'}],
+    Opts = [{'response_format', 'binary'}, {'connect_timeout', 3000}],
 	lager:debug("send request... ... ...: ~p ~p", [Target, Body]),
     ibrowse:trace_on(),
-    F = fun() -> ibrowse:send_req(?DDB_ENDPOINT, Headers, 'post', Body, Opts) end,
+    F = fun() -> ibrowse:send_req(?DDB_ENDPOINT, Headers, 'post', Body, Opts, 10000) end,
 	case ddb_aws:retry(F, ?MAX_RETRIES, fun jsx:json_to_term/1) of
 	{'error', 'expired_token'} ->
 	    {ok, Key, Secret, Token} = ddb_iam:token(129600),
