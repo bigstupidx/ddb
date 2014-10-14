@@ -45,7 +45,7 @@
 
 -define(DDB_DOMAIN, "dynamodb.us-east-1.amazonaws.com").
 %%-define(DDB_DOMAIN, "dynamodb.ap-northeast-1.amazonaws.com").
--define(DDB_ENDPOINT, "https://" ++ ?DDB_DOMAIN ++ "/").
+-define(DDB_ENDPOINT, "http://" ++ ?DDB_DOMAIN ++ "/").
 -define(DDB_AMZ_PREFIX, "x-amz-").
 
 -define(SIGNATURE_METHOD, "HmacSHA1").
@@ -111,8 +111,8 @@ credentials(AccessKeyId, SecretAccessKey, SessionToken) ->
     'ok' = application:set_env('ddb', 'sessiontoken', SessionToken),
 %%     ibrowse:set_max_timeout(infinity),
 %%     ibrowse:set_config_value(inactivity_timeout, 60 * 1000),
-	ibrowse:set_max_sessions(?DDB_DOMAIN, 443, 1024),
-    ibrowse:set_max_pipeline_size(?DDB_DOMAIN, 443, 10).
+	ibrowse:set_max_sessions(?DDB_DOMAIN, 80, 50),
+    ibrowse:set_max_pipeline_size(?DDB_DOMAIN, 80, 10).
 
 %%% Retrieve stored credentials.
 
